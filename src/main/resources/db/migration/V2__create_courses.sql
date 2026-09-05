@@ -1,0 +1,7 @@
+CREATE TABLE courses (
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(150) NOT NULL,
+    description VARCHAR(1000) NOT NULL,
+    published BOOLEAN NOT NULL DEFAULT FALSE,
+    author_id BIGINT NOT NULL REFERENCES users(id)
+);

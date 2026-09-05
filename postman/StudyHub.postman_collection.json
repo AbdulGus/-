@@ -1,0 +1,60 @@
+{
+  "info": {
+    "name": "StudyHub API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:8080"},
+    {"key": "token", "value": ""}
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "{{baseUrl}}/api/auth/register",
+            "body": {"mode": "raw", "raw": "{\n  \"name\": \"Student\",\n  \"email\": \"student@example.com\",\n  \"password\": \"student123\"\n}"}
+          },
+          "event": [{"listen": "test", "script": {"exec": ["pm.collectionVariables.set('token', pm.response.json().token);"]}}]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": {"mode": "raw", "raw": "{\n  \"email\": \"student@example.com\",\n  \"password\": \"student123\"\n}"}
+          },
+          "event": [{"listen": "test", "script": {"exec": ["pm.collectionVariables.set('token', pm.response.json().token);"]}}]
+        }
+      ]
+    },
+    {
+      "name": "Courses",
+      "item": [
+        {
+          "name": "List courses",
+          "request": {
+            "method": "GET",
+            "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{token}}", "type": "string"}]},
+            "url": "{{baseUrl}}/api/courses"
+          }
+        },
+        {
+          "name": "Create course",
+          "request": {
+            "method": "POST",
+            "auth": {"type": "bearer", "bearer": [{"key": "token", "value": "{{token}}", "type": "string"}]},
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "url": "{{baseUrl}}/api/courses",
+            "body": {"mode": "raw", "raw": "{\n  \"title\": \"Java с нуля\",\n  \"description\": \"Учебный курс\",\n  \"published\": false,\n  \"tagIds\": [1, 2]\n}"}
+          }
+        }
+      ]
+    }
+  ]
+}
