@@ -25,6 +25,7 @@ docker compose ps
 
 После запуска доступны:
 
+- Сайт: <http://localhost:8080>
 - Swagger UI: <http://localhost:8080/swagger-ui.html>
 - OpenAPI JSON: <http://localhost:8080/v3/api-docs>
 - API: <http://localhost:8080/api/courses>
