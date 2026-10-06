@@ -1,47 +1,35 @@
-# StudyHub Minimal
+# StudyHub
 
-Учебный REST API для управления курсами.
-## Что реализовано
+Минимальный REST API для управления учебными курсами на Java 21 и Spring Boot.
 
-- REST CRUD для курсов, уроков и тегов;
-- request/response DTO — JPA Entity не выходят из контроллеров;
-- регистрация и вход по JWT;
-- роли `USER` и `ADMIN`, проверка через `@PreAuthorize`;
-- Bean Validation и единый формат ошибок через `@ControllerAdvice`;
-- PostgreSQL и 6 Flyway-миграций;
-- Swagger/OpenAPI с JWT Bearer-схемой;
-- устранение одного случая N+1 через `@EntityGraph`;
-- 2 unit-теста сервиса и MockMvc-тесты контроллеров/безопасности;
-- Docker Compose, README и Postman collection.
+## Выполненные требования
 
-В проекте нет Redis, очередей, фоновых задач и frontend — они не требуются по выбранным критериям.
+- REST: CRUD курсов, добавление/изменение/удаление уроков, просмотр/создание/удаление тегов.
+- Request/response DTO и Bean Validation.
+- JWT-аутентификация и роли `USER`, `ADMIN`.
+- Единая обработка ошибок через `@RestControllerAdvice`.
+- PostgreSQL и 6 миграций Flyway.
+- Swagger/OpenAPI с JWT Bearer-схемой.
+- Устранение N+1 через `@EntityGraph`.
+- 2 unit-теста и 3 MockMvc-теста.
+- Docker Compose и Postman collection.
 
-## Стек
+## Запуск
 
-Java 21, Spring Boot 4, Spring Web MVC, Spring Data JPA, Spring Security, PostgreSQL, Flyway, JWT, Swagger, JUnit 5, Mockito, MockMvc, Docker.
-
-## Запуск через Docker
-
-Нужен запущенный Docker Desktop.
+Нужны Docker Desktop и свободные порты `8080`, `5432`.
 
 ```bash
 docker compose up --build -d
-```
-
-Проверка контейнеров:
-
-```bash
 docker compose ps
 ```
 
-После запуска:
+После запуска доступны:
 
-- API: <http://localhost:8080/api/courses>
 - Swagger UI: <http://localhost:8080/swagger-ui.html>
 - OpenAPI JSON: <http://localhost:8080/v3/api-docs>
-- PostgreSQL: `localhost:5432`, база `study_hub`, логин и пароль `postgres`
+- API: <http://localhost:8080/api/courses>
 
-Остановка без удаления данных:
+Остановка:
 
 ```bash
 docker compose down
@@ -49,84 +37,71 @@ docker compose down
 
 ## JWT и роли
 
-Публичные endpoints:
+Публичные запросы:
 
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 
-Остальные endpoints требуют заголовок:
+Остальные запросы требуют заголовок:
 
 ```text
-Authorization: Bearer <JWT_TOKEN>
+Authorization: Bearer <token>
 ```
 
-Новый пользователь получает роль `USER`. Только `ADMIN` может создавать и удалять теги. Пользователь может изменять только свои курсы, а администратор — любые.
-
-Для проверки роли администратора можно изменить роль зарегистрированного пользователя в локальной БД:
+Регистрация создаёт пользователя с ролью `USER`. Создание и удаление тегов разрешено только роли `ADMIN`. Для проверки роли зарегистрируйте `student@example.com`, затем выполните:
 
 ```bash
 docker compose exec postgres psql -U postgres -d study_hub -c "UPDATE users SET role='ADMIN' WHERE email='student@example.com';"
 ```
 
-После изменения роли нужно войти заново и получить новый JWT.
-
-## Основные endpoints
-
-| Метод | URL | Доступ |
-|---|---|---|
-| POST | `/api/auth/register` | публичный |
-| POST | `/api/auth/login` | публичный |
-| GET | `/api/courses` | USER, ADMIN |
-| GET | `/api/courses/{id}` | USER, ADMIN |
-| POST | `/api/courses` | USER, ADMIN |
-| PUT/DELETE | `/api/courses/{id}` | автор, ADMIN |
-| POST/PUT/DELETE | `/api/courses/{courseId}/lessons/**` | автор, ADMIN |
-| GET | `/api/tags` | USER, ADMIN |
-| POST/DELETE | `/api/tags/**` | ADMIN |
-
-Тела запросов и ответов удобно смотреть и выполнять в Swagger.
+После смены роли снова выполните вход, чтобы получить новый JWT.
 
 ## Flyway
 
 Миграции находятся в `src/main/resources/db/migration`:
 
-1. создание пользователей;
-2. создание курсов;
-3. создание уроков;
-4. создание тегов;
-5. таблица связи курсов и тегов;
-6. индексы каталога.
+1. `V1__create_users.sql`
+2. `V2__create_courses.sql`
+3. `V3__create_lessons.sql`
+4. `V4__create_tags.sql`
+5. `V5__create_course_tags.sql`
+6. `V6__add_catalog_indexes.sql`
 
-Hibernate использует `ddl-auto: validate`, поэтому схему создаёт и изменяет только Flyway.
+`spring.jpa.hibernate.ddl-auto=validate`: Hibernate проверяет схему, а создаёт её Flyway.
 
 ## Устранение N+1
 
-При загрузке подробного курса нужны автор, уроки и теги. Обычная ленивая загрузка могла выполнить отдельные SQL-запросы для каждой связи.
-
-Метод `CourseRepository.findDetailedById` использует:
+`GET /api/courses/{id}` возвращает курс вместе с автором, уроками и тегами. Без специальной загрузки Hibernate мог бы отдельно запрашивать каждую ленивую связь. Метод `CourseRepository.findDetailedById` использует:
 
 ```java
 @EntityGraph(attributePaths = {"author", "lessons", "tags"})
 ```
 
-Поэтому Hibernate загружает карточку курса и нужные связи одним запросом вместо нескольких дополнительных запросов. Этот метод используется в `GET /api/courses/{id}`.
+Связанные данные загружаются в рамках одного обращения к репозиторию, поэтому дополнительные запросы для каждой связи не выполняются.
 
 ## Тесты
 
 Windows:
 
 ```powershell
-.\mvnw.cmd verify
+.\mvnw.cmd clean verify
 ```
 
 Linux/macOS:
 
 ```bash
-./mvnw verify
+./mvnw clean verify
 ```
 
-В проекте есть два unit-сценария `CourseServiceTest`, MockMvc-проверки регистрации/валидации и отдельная MockMvc-проверка доступа без JWT.
+`CourseServiceTest` содержит 2 unit-теста. `AuthControllerTest` содержит 2 MockMvc-теста, `SecurityAccessTest` — 1 MockMvc-тест безопасности.
 
 ## Postman
 
-Импортируйте файл `postman/StudyHub.postman_collection.json`. Запрос регистрации или входа автоматически сохраняет JWT в переменную коллекции `token`.
+Импортируйте `postman/StudyHub.postman_collection.json` и выполните запросы по порядку:
+
+1. `Register`
+2. `Login`
+3. `List courses`
+4. `Create course`
+
+После регистрации или входа JWT автоматически сохраняется в переменную коллекции `token`.

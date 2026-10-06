@@ -7,14 +7,12 @@ import com.example.tutins.exception.NotFoundException;
 import com.example.tutins.repository.CourseRepository;
 import com.example.tutins.repository.LessonRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class LessonService {
     private final LessonRepository lessonRepository;
     private final CourseRepository courseRepository;
@@ -28,7 +26,6 @@ public class LessonService {
         lesson.setCourse(course);
         apply(lesson, request);
         lessonRepository.save(lesson);
-        log.info("Lesson created id={} course={}", lesson.getId(), courseId);
         return response(lesson);
     }
 
@@ -40,7 +37,6 @@ public class LessonService {
         if (!lesson.getCourse().getId().equals(courseId)) throw new NotFoundException("Урок не относится к курсу");
         checkOwner(lesson.getCourse(), email, admin);
         apply(lesson, request);
-        log.info("Lesson updated id={} course={}", lessonId, courseId);
         return response(lesson);
     }
 
@@ -51,7 +47,6 @@ public class LessonService {
         if (!lesson.getCourse().getId().equals(courseId)) throw new NotFoundException("Урок не относится к курсу");
         checkOwner(lesson.getCourse(), email, admin);
         lessonRepository.delete(lesson);
-        log.info("Lesson deleted id={} course={}", lessonId, courseId);
     }
 
     private Course course(Long id) {

@@ -8,8 +8,6 @@ spring:
       ddl-auto: create-drop
   flyway:
     enabled: false
-  cache:
-    type: none
 app:
   jwt:
     secret: test-secret-key-with-at-least-thirty-two-characters

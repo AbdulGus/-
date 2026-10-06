@@ -10,7 +10,6 @@ import com.example.tutins.repository.CourseRepository;
 import com.example.tutins.repository.TagRepository;
 import com.example.tutins.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +21,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class CourseService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
@@ -45,7 +43,6 @@ public class CourseService {
         course.setAuthor(author);
         apply(course, request);
         Course saved = courseRepository.save(course);
-        log.info("Course created id={} author={}", saved.getId(), email);
         return toResponse(saved);
     }
 
@@ -54,7 +51,6 @@ public class CourseService {
         Course course = detailed(id);
         checkOwner(course, email, admin);
         apply(course, request);
-        log.info("Course updated id={} by={}", id, email);
         return toResponse(course);
     }
 
@@ -63,7 +59,6 @@ public class CourseService {
         Course course = detailed(id);
         checkOwner(course, email, admin);
         courseRepository.delete(course);
-        log.info("Course deleted id={} by={}", id, email);
     }
 
     private Course detailed(Long id) {

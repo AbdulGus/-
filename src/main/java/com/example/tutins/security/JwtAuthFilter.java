@@ -32,9 +32,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(
                             new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()));
                 }
-            } catch (JwtException | IllegalArgumentException ignored) {
-                // Некорректный токен просто не создаёт аутентификацию; Security вернёт 401.
-            }
+            } catch (JwtException | IllegalArgumentException ignored) {}
         }
         filterChain.doFilter(request, response);
     }

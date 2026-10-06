@@ -9,9 +9,6 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: validate
-    properties:
-      hibernate:
-        format_sql: true
   flyway:
     enabled: true
 
@@ -26,7 +23,3 @@ app:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
-
-logging:
-  level:
-    com.example.tutins: INFO

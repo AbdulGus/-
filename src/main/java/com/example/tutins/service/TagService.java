@@ -6,7 +6,6 @@ import com.example.tutins.exception.BusinessException;
 import com.example.tutins.exception.NotFoundException;
 import com.example.tutins.repository.TagRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +13,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class TagService {
     private final TagRepository tagRepository;
 
@@ -31,7 +29,6 @@ public class TagService {
         Tag tag = new Tag();
         tag.setName(request.name().trim().toLowerCase());
         tagRepository.save(tag);
-        log.info("Tag created id={} name={}", tag.getId(), tag.getName());
         return response(tag);
     }
 
@@ -40,7 +37,6 @@ public class TagService {
         Tag tag = tagRepository.findById(id).orElseThrow(() -> new NotFoundException("Тег не найден: " + id));
         if (!tag.getCourses().isEmpty()) throw new BusinessException("Нельзя удалить тег, используемый в курсах");
         tagRepository.delete(tag);
-        log.info("Tag deleted id={}", id);
     }
 
     private TagDtos.TagResponse response(Tag tag) {
