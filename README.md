@@ -36,6 +36,29 @@ docker compose ps
 docker compose down
 ```
 
+## Запуск без Docker
+
+Нужны PostgreSQL 17 и Java 21. Параметры локальной базы по умолчанию:
+
+```text
+База: study_hub
+Пользователь: postgres
+Пароль: postgres
+Порт: 5432
+```
+
+Создайте пустую базу и запустите приложение:
+
+```powershell
+$env:PGPASSWORD = "postgres"
+& "C:\Program Files\PostgreSQL\17\bin\createdb.exe" -U postgres study_hub
+.\mvnw.cmd spring-boot:run
+```
+
+Flyway автоматически создаст таблицы при первом запуске. После запуска откройте <http://localhost:8080>.
+
+Готовая SQL-копия структуры находится в `database/study_hub.sql` — её можно открыть в pgAdmin, чтобы посмотреть таблицы и связи. Для рабочей базы `study_hub` оставьте её пустой: Flyway создаст таблицы и сохранит историю миграций автоматически. Не запускайте SQL-копию в рабочей базе перед стартом приложения.
+
 ## JWT и роли
 
 Публичные запросы:
@@ -53,6 +76,13 @@ Authorization: Bearer <token>
 
 ```bash
 docker compose exec postgres psql -U postgres -d study_hub -c "UPDATE users SET role='ADMIN' WHERE email='student@example.com';"
+```
+
+При запуске без Docker та же команда выглядит так:
+
+```powershell
+$env:PGPASSWORD = "postgres"
+& "C:\Program Files\PostgreSQL\17\bin\psql.exe" -U postgres -d study_hub -c "UPDATE users SET role='ADMIN' WHERE email='student@example.com';"
 ```
 
 После смены роли снова выполните вход, чтобы получить новый JWT.
@@ -106,3 +136,4 @@ Linux/macOS:
 4. `Create course`
 
 После регистрации или входа JWT автоматически сохраняется в переменную коллекции `token`.
+
